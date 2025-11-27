@@ -20,7 +20,7 @@ pipeline {
         )
         string(
             name: 'API_HOST',
-            defaultValue: 'http://192.168.64.2:3001',
+            defaultValue: 'http://192.168.64.3:3001',
             description: 'API host URL for frontend to connect to.'
         )
     }
@@ -60,8 +60,8 @@ pipeline {
                         sh """
                             cat > .env <<EOF
 MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASS}
-MYSQL_DATABASE=mythicalcreatures_db
-MYSQL_USER=mythicalcreatures_user
+MYSQL_DATABASE=attractions_db
+MYSQL_USER=attractions_user
 MYSQL_PASSWORD=${MYSQL_PASS}
 MYSQL_PORT=3306
 PHPMYADMIN_PORT=8888
@@ -120,8 +120,8 @@ EOF
                         # Wait for API to be ready (max 60 seconds)
                         timeout 60 bash -c 'until curl -f http://localhost:3001/health; do sleep 2; done' || exit 1
 
-                        # Check mythicalcreatures endpoint
-                        curl -f http://localhost:3001/mythicalcreatures || exit 1
+                        # Check attractions endpoint
+                        curl -f http://localhost:3001/disneycharacters || exit 1
 
                         echo "Health check passed!"
                     """
