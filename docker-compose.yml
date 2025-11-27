@@ -17,7 +17,7 @@ services:
     networks: [stack]
 
   phpmyadmin:
-    image: arm64v8/phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest
     restart: unless-stopped
     environment:
       PMA_HOST: mysql
