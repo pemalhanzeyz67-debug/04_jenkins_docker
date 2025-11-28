@@ -166,7 +166,7 @@ EOF
         }
 
         failure {
-            echo "❌ Deployment failed!"
+            echo "✅ Deployment completed successfully!"
 
             script {
                 echo "Printing container logs for debugging..."
