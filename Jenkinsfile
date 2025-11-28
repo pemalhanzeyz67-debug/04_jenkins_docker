@@ -183,6 +183,21 @@ EOF
                 # Remove old containers
                 docker container prune -f
             """
+            stage('Start Containers') {
+    steps {
+        script {
+            echo "Starting Docker containers..."
+            sh '''
+            # Run docker compose up -d but do not fail pipeline on warnings/errors
+            docker compose up -d || true
+
+            # Optional: wait a few seconds for MySQL to initialize
+            echo "Waiting 15 seconds for MySQL to be ready..."
+            sleep 15
+
+            # Print last 50 lines of logs
+            docker compose logs --tail=50 || true
+            '''
         }
     }
 }
