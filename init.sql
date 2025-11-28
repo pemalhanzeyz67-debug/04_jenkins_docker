@@ -1,4 +1,4 @@
-CREATE TABLE `mythical_creature` (
+CREATE TABLE `mythicalcreatures` (
   `id` int(11) NOT NULL,
   `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `detail` text COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -22,9 +22,9 @@ INSERT INTO `mythical_creature` (`id`, `name`, `detail`, `coverimage`, `countryo
 (12, 'Pegasus', 'A divine winged horse, usually depicted as pure white and born from Greek mythology.', '12.jpg', 'Greece');
 
 
-ALTER TABLE `mythical_creature`
+ALTER TABLE `mythicalcreatures`
   ADD PRIMARY KEY (`id`);
 
-ALTER TABLE `mythical_creature`
+ALTER TABLE `mythicalcreatures`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
