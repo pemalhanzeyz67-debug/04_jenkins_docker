@@ -1,69 +1,58 @@
+version: '3.8'
+
 services:
+
   mysql:
     image: mysql:8.0
-    container_name: attractions_mysql
+    container_name: mythicalcreatures_mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-      TZ: Asia/Bangkok
     ports:
-      - "127.0.0.1:${MYSQL_PORT:-3306}:3306"
+      - "${DB_PORT}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    networks: [stack]
-
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
-    restart: unless-stopped
-    environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
-      UPLOAD_LIMIT: 256M
-    ports:
-      - "${PHPMYADMIN_PORT:-8888}:80"
-    depends_on: [mysql]
-    networks: [stack]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 5
 
   api:
     build: ./01_api
+    container_name: 04_jenkins_docker-api-1
     restart: unless-stopped
     environment:
-      NODE_ENV: production
-      PORT: ${API_PORT}
       DB_HOST: mysql
       DB_PORT: ${DB_PORT}
-      DB_NAME: ${MYSQL_DATABASE}
       DB_USER: ${MYSQL_USER}
       DB_PASSWORD: ${MYSQL_PASSWORD}
-      TZ: Asia/Bangkok
+      DB_NAME: ${MYSQL_DATABASE}
     ports:
-      - "${API_PORT:-3001}:3001"
-    depends_on: [mysql]
-    networks: [stack]
+      - "${API_PORT}:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
 
-  frontend:
-    build:
-      context: ./02_frontend
-      args:
-        - API_HOST=${API_HOST:-http://localhost:3001}
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: 04_jenkins_docker-phpmyadmin-1
     restart: unless-stopped
     environment:
-      - NODE_ENV=production
+      PMA_HOST: mysql
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"
-    depends_on: [api]
-    networks: [stack]
+      - "${PHPMYADMIN_PORT}:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
 
 volumes:
   mysql_data:
 
-networks:
-  stack:
-    driver: bridge
 
 
 
