@@ -7,9 +7,8 @@ pipeline {
     }
 
     environment {
-        // Build Information
         BUILD_TAG = "${env.BUILD_NUMBER}"
-        GIT_COMMIT_SHORT = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+        // GIT_COMMIT_SHORT will be set in Checkout stage
     }
 
     parameters {
@@ -31,6 +30,7 @@ pipeline {
                 script {
                     echo "Checking out code..."
                     checkout scm
+                    env.GIT_COMMIT_SHORT = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
                     echo "Deploying to production environment"
                     echo "Build: ${BUILD_TAG}, Commit: ${GIT_COMMIT_SHORT}"
                 }
@@ -50,7 +50,6 @@ pipeline {
             steps {
                 script {
                     echo "Preparing environment configuration..."
-
                     // Load credentials from Jenkins
                     withCredentials([
                         string(credentialsId: 'MYSQL_ROOT_PASSWORD', variable: 'MYSQL_ROOT_PASS'),
@@ -73,10 +72,7 @@ API_HOST=${params.API_HOST}
 EOF
                         """
                     }
-
-                    echo "Environment configuration created"
-                    // Don't print .env to avoid exposing passwords in logs
-                    sh 'echo ".env file created successfully"'
+                    echo ".env file created successfully"
                 }
             }
         }
@@ -85,7 +81,6 @@ EOF
             steps {
                 script {
                     echo "Deploying to production using Docker Compose..."
-
                     // Stop existing containers
                     def downCommand = 'docker compose down'
                     if (params.CLEAN_VOLUMES) {
@@ -99,7 +94,6 @@ EOF
                         docker compose build --no-cache
                         docker compose up -d
                     """
-
                     echo "Deployment completed"
                 }
             }
@@ -112,9 +106,7 @@ EOF
                     sh 'sleep 15'
 
                     echo "Performing health check..."
-
                     sh """
-                        # Check if containers are running
                         docker compose ps
 
                         # Wait for API to be ready (max 60 seconds)
@@ -133,7 +125,6 @@ EOF
             steps {
                 script {
                     echo "Verifying all services..."
-
                     sh """
                         echo "=== Container Status ==="
                         docker compose ps
@@ -167,7 +158,6 @@ EOF
 
         failure {
             echo "❌ Deployment failed!"
-
             script {
                 echo "Printing container logs for debugging..."
                 sh 'docker compose logs --tail=50 || true'
@@ -180,13 +170,9 @@ EOF
                 # Remove dangling images
                 docker image prune -f
 
-                # Remove old containers
+                # Remove stopped containers
                 docker container prune -f
             """
-            stage('Start Containers') {
-    
         }
     }
-}
-
 }
